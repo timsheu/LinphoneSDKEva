@@ -41,9 +41,27 @@ class LinphoneMiniListener{
                 mInterface?.callAccepted()
                 mAudioManager.mode = AudioManager.MODE_IN_COMMUNICATION
                 logger.info { "early media, is video enabled: ${call!!.currentParams.videoEnabled}, accept result: $result" }
-
-            }else if (state == State.CallEnd){
+            }else if (state == State.StreamsRunning) {
+                if (!isOutgoingUpdating) {
+                    isOutgoingUpdating = true
+                    isOutgoingCall = true
+                    mCall = call
+                    val params = mLinphoneCore.createCallParams(call)
+                    params.videoEnabled = true
+                    mLinphoneCore.updateCall(call, params)
+                    logger.info { "connected, is video enabled: ${call!!.currentParams.videoEnabled}, params: ${params.videoEnabled}" }
+                }
+            }else if (state == State.CallUpdating){
+                if (!isOutgoingUpdated) {
+                    isOutgoingUpdated = true
+//                    mInterface?.callAccepted()
+                    logger.info { "CallUpdating, is video enabled: ${call!!.currentParams.videoEnabled}" }
+                }
+            }else if (state == State.CallEnd || state == State.CallReleased){
+                isOutgoingUpdated = false
                 isIncomingCall = false
+                isOutgoingCall = false
+                isOutgoingUpdating = false
                 mCall = null
             }
         }
@@ -55,6 +73,8 @@ class LinphoneMiniListener{
     var mInterface: LinphoneMiniListenerInterface? = null
     private var isIncomingCall = false
     private var isOutgoingCall = false
+    private var isOutgoingUpdating = false
+    private var isOutgoingUpdated = false
     private var mContext: Context
     private var mCall: LinphoneCall? = null
     lateinit var mLinphoneCore: LinphoneCore
@@ -138,6 +158,10 @@ class LinphoneMiniListener{
         if (isIncomingCall) {
             mLinphoneCore.terminateCall(mCall)
         }
+        isOutgoingCall = false
+        isIncomingCall = false
+        isOutgoingUpdated = false
+        isOutgoingUpdating = false
     }
 
     fun dial(){
@@ -147,40 +171,11 @@ class LinphoneMiniListener{
                 mCall = mLinphoneCore.invite(ipAddress)
             }
             val call = mCall
-            var isConnected = false
-            var iterateIntervalMs = 50L
             if (call == null){
                 logger.info { "could not place call to " + ipAddress }
-            }else {
-                while (isOutgoingCall){
-                    mLinphoneCore.iterate()
-
-                    try {
-                        Thread.sleep(iterateIntervalMs)
-
-                        if (call.state.equals(LinphoneCall.State.CallEnd) || call.state.equals(LinphoneCall.State.CallReleased)){
-                            isOutgoingCall = false
-                        }
-
-                        if (call.state.equals(LinphoneCall.State.StreamsRunning)){
-                            logger.info { "Running" }
-                            isConnected = true
-                        }
-
-                        if (call.state.equals(LinphoneCall.State.OutgoingRinging)){
-                            logger.info { "Ringing" }
-                        }
-                    } catch (e: InterruptedException){
-                        e.printStackTrace()
-                    }
-                }
-
-                if (!call.state.equals(LinphoneCall.State.CallEnd)){
-                    logger.info { "Force terminate call" }
-                    mLinphoneCore.terminateCall(call)
-                    isConnected = false
-                }
             }
+        }else {
+            logger.info { "isIncomingCall=$isIncomingCall" }
         }
     }
 
