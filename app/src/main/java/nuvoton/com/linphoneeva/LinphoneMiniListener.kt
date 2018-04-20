@@ -90,7 +90,7 @@ class LinphoneMiniListener{
 
     constructor(context: Context){
         this.mContext = context
-        LinphoneCoreFactory.instance().setDebugMode(false, "Linphone Mini")
+        LinphoneCoreFactory.instance().setDebugMode(true, "Linphone Mini")
 
         try {
             val basePath = mContext.filesDir.absolutePath
@@ -110,6 +110,10 @@ class LinphoneMiniListener{
             mAudioManager.stopBluetoothSco()
             mAudioManager.isBluetoothScoOn = false
             logger.info { "bluetooth mode: ${mAudioManager.mode}" }
+            for (codec in mLinphoneCore.videoCodecs){
+                logger.info { "codec: ${codec.toString()}, mime: ${codec.mime.toString()}" }
+            }
+
             mLinphoneCore.enableVideo(true, true)
         }catch (e: LinphoneCoreException){
             e.printStackTrace()

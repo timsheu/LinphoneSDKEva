@@ -92,7 +92,6 @@ class MainActivity : AppCompatActivity() , LinphoneMiniListener.LinphoneMiniList
                         permission.READ_CONTACTS,
                         permission.MODIFY_AUDIO_SETTINGS,
                         permission.CALL_PHONE,
-                        permission.CAMERA,
                         permission.READ_PHONE_STATE,
                         permission.ACCESS_NETWORK_STATE,
                         permission.PROCESS_OUTGOING_CALLS,
