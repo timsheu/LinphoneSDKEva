@@ -23,47 +23,13 @@ class LinphoneMiniListener{
 
     interface LinphoneMiniListenerInterface {
         fun callAccepted()
+        fun linphoneCallState(state: State, message: String)
     }
 
     private var mListener: LinphoneCoreListener = object : LinphoneCoreListenerBase() {
         override fun callState(lc: LinphoneCore?, call: LinphoneCall?, state: State?, message: String?) {
-            isIncomingCall = true
             mCall = call
-            logger.info { "lc: ${lc.toString()}, call: ${mCall.toString()}, call state: ${mCall?.state}, state: ${state.toString()}, message: $message" }
-            if (state == State.IncomingReceived){
-                isIncomingCall = true
-                mCall = call
-                val params: LinphoneCallParams = mLinphoneCore.createCallParams(call)
-                params.enableLowBandwidth(false)
-                params.videoEnabled = true
-                checkCamera()
-                val result = mLinphoneCore.acceptEarlyMediaWithParams(call!!, params)
-                mInterface?.callAccepted()
-                mAudioManager.mode = AudioManager.MODE_IN_COMMUNICATION
-                logger.info { "early media, is video enabled: ${call!!.currentParams.videoEnabled}, accept result: $result" }
-            }else if (state == State.StreamsRunning) {
-                if (!isOutgoingUpdating) {
-                    isOutgoingUpdating = true
-                    isOutgoingCall = true
-                    mCall = call
-                    val params = mLinphoneCore.createCallParams(call)
-                    params.videoEnabled = true
-                    mLinphoneCore.updateCall(call, params)
-                    logger.info { "connected, is video enabled: ${call!!.currentParams.videoEnabled}, params: ${params.videoEnabled}" }
-                }
-            }else if (state == State.CallUpdating){
-                if (!isOutgoingUpdated) {
-                    isOutgoingUpdated = true
-//                    mInterface?.callAccepted()
-                    logger.info { "CallUpdating, is video enabled: ${call!!.currentParams.videoEnabled}" }
-                }
-            }else if (state == State.CallEnd || state == State.CallReleased){
-                isOutgoingUpdated = false
-                isIncomingCall = false
-                isOutgoingCall = false
-                isOutgoingUpdating = false
-                mCall = null
-            }
+            mInterface?.linphoneCallState(state ?: State.CallReleased, message ?: "No available call")
         }
     }
 
@@ -71,10 +37,8 @@ class LinphoneMiniListener{
         lateinit var mInstance: LinphoneMiniListener
     }
     var mInterface: LinphoneMiniListenerInterface? = null
-    private var isIncomingCall = false
-    private var isOutgoingCall = false
-    private var isOutgoingUpdating = false
-    private var isOutgoingUpdated = false
+    var isIncomingCall = false
+    var isOutgoingCall = false
     private var mContext: Context
     private var mCall: LinphoneCall? = null
     lateinit var mLinphoneCore: LinphoneCore
@@ -90,7 +54,7 @@ class LinphoneMiniListener{
 
     constructor(context: Context){
         this.mContext = context
-        LinphoneCoreFactory.instance().setDebugMode(true, "Linphone Mini")
+        LinphoneCoreFactory.instance().setDebugMode(false, "Linphone Mini")
 
         try {
             val basePath = mContext.filesDir.absolutePath
@@ -113,7 +77,6 @@ class LinphoneMiniListener{
             for (codec in mLinphoneCore.videoCodecs){
                 logger.info { "codec: ${codec.toString()}, mime: ${codec.mime.toString()}" }
             }
-
             mLinphoneCore.enableVideo(true, true)
         }catch (e: LinphoneCoreException){
             e.printStackTrace()
@@ -128,11 +91,25 @@ class LinphoneMiniListener{
             mLinphoneCore.destroy()
         }catch (e: RuntimeException){
 
-        }finally {
-//            commented to avoid issue
-//            mLinphoneCore = null
-//            mInstance = null
         }
+    }
+
+    fun enableVideo() : Int{
+        val param = mLinphoneCore.createCallParams(mCall)
+        param.videoEnabled = true
+        return mLinphoneCore.updateCall(mCall, param)
+    }
+
+    fun acceptEarlyMedia() : Boolean{
+        isIncomingCall = true
+
+        mAudioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+
+        val params: LinphoneCallParams = mLinphoneCore.createCallParams(mCall)
+        params.enableLowBandwidth(false)
+        params.videoEnabled = true
+
+        return mLinphoneCore.acceptEarlyMediaWithParams(mCall, params)
     }
 
     fun accept() {
@@ -159,23 +136,26 @@ class LinphoneMiniListener{
     }
 
     fun decline() {
-        if (isIncomingCall) {
+        logger.info { "in: $isIncomingCall, out: $isOutgoingCall" }
+        if (isIncomingCall || isOutgoingCall) {
             mLinphoneCore.terminateCall(mCall)
         }
         isOutgoingCall = false
         isIncomingCall = false
-        isOutgoingUpdated = false
-        isOutgoingUpdating = false
+        mCall = null
     }
 
     fun dial(){
+        logger.info { "isOutgoingCall: $isOutgoingCall" }
         isOutgoingCall = true
         if (!isIncomingCall){
-            if (mCall == null){
+            try {
                 mCall = mLinphoneCore.invite(ipAddress)
+            }catch (e: Exception){
+                e.printStackTrace()
             }
-            val call = mCall
-            if (call == null){
+            logger.info { "place call to $ipAddress" }
+            if (mCall == null){
                 logger.info { "could not place call to " + ipAddress }
             }
         }else {
@@ -192,6 +172,10 @@ class LinphoneMiniListener{
                 mLinphoneCore.pauseCall(call)
             }
         }
+    }
+
+    fun updateCall(params: LinphoneCallParams){
+        mLinphoneCore.updateCall(mCall, params)
     }
 
     private fun copyAssetsFromPackage(basePath: String) {
