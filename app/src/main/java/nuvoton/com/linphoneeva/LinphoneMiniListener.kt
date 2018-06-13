@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.util.DisplayMetrics
 import android.view.SurfaceView
-import mu.KotlinLogging
 import org.linphone.core.*
 import java.io.IOException;
 import java.util.Timer;
@@ -17,12 +16,13 @@ import kotlin.concurrent.timerTask
 /**
  * Created by cchsu20 on 14/03/2018.
  */
-private val logger = KotlinLogging.logger {}
 
-class LinphoneMiniListener{
+class LinphoneMiniListener(context: Context) {
+    private val TAG = "LinphoneMiniListener"
 
     interface LinphoneMiniListenerInterface {
         fun callAccepted()
+        fun callEnded()
         fun linphoneCallState(state: State, message: String)
     }
 
@@ -39,7 +39,7 @@ class LinphoneMiniListener{
     var mInterface: LinphoneMiniListenerInterface? = null
     var isIncomingCall = false
     var isOutgoingCall = false
-    private var mContext: Context
+    private var mContext: Context = context
     private var mCall: LinphoneCall? = null
     lateinit var mLinphoneCore: LinphoneCore
     private lateinit var mTimer: Timer
@@ -47,43 +47,7 @@ class LinphoneMiniListener{
     lateinit var videoView: SurfaceView
     lateinit var videoCaptureView: SurfaceView
     var ipAddress = "sip:192.168.8."
-
-    init {
-
-    }
-
-    constructor(context: Context){
-        this.mContext = context
-        LinphoneCoreFactory.instance().setDebugMode(false, "Linphone Mini")
-
-        try {
-            val basePath = mContext.filesDir.absolutePath
-            copyAssetsFromPackage(basePath)
-            mLinphoneCore = LinphoneCoreFactory.instance().createLinphoneCore(mListener, basePath + "/.linphonerc", basePath + "linphonerc", null, mContext)
-            mLinphoneCore.addListener(mListener)
-            initLinphoneCoreValues(basePath)
-
-            setUserAgent()
-            setFrontCamAsDefault()
-            startIterate()
-            mInstance = this
-            mLinphoneCore.isNetworkReachable = true
-            mLinphoneCore.setSipNetworkReachable(true)
-            mLinphoneCore.enableSpeaker(true)
-            mAudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            mAudioManager.stopBluetoothSco()
-            mAudioManager.isBluetoothScoOn = false
-            logger.info { "bluetooth mode: ${mAudioManager.mode}" }
-            for (codec in mLinphoneCore.videoCodecs){
-                logger.info { "codec: ${codec.toString()}, mime: ${codec.mime.toString()}" }
-            }
-            mLinphoneCore.enableVideo(true, true)
-        }catch (e: LinphoneCoreException){
-            e.printStackTrace()
-        }catch (e: IOException){
-            e.printStackTrace()
-        }
-    }
+    var audioOnly = false
 
     fun destroy() {
         try {
@@ -125,18 +89,18 @@ class LinphoneMiniListener{
                     mLinphoneCore.enableSpeaker(true)
                     mAudioManager.mode = AudioManager.MODE_IN_COMMUNICATION
                     mInterface?.callAccepted()
-                    logger.info { "incoming received, is video enabled: ${call.currentParams.videoEnabled}" }
+                    NuvotonLogger.debugMessage(TAG, "incoming received, is video enabled: ${call.currentParams.videoEnabled}")
                 }else {
                     mAudioManager.mode = AudioManager.MODE_NORMAL
                 }
             }
         }else {
-            logger.info { "There are no incoming calls" }
+            NuvotonLogger.debugMessage(TAG, "There are no incoming calls")
         }
     }
 
     fun decline() {
-        logger.info { "in: $isIncomingCall, out: $isOutgoingCall" }
+        NuvotonLogger.debugMessage(TAG, "in: $isIncomingCall, out: $isOutgoingCall")
         if (isIncomingCall || isOutgoingCall) {
             mLinphoneCore.terminateCall(mCall)
         }
@@ -146,20 +110,20 @@ class LinphoneMiniListener{
     }
 
     fun dial(){
-        logger.info { "isOutgoingCall: $isOutgoingCall" }
+        NuvotonLogger.debugMessage(TAG, "isOutgoingCall: $isOutgoingCall")
         isOutgoingCall = true
-        if (!isIncomingCall){
+        if (!isOutgoingCall && !isIncomingCall){
             try {
                 mCall = mLinphoneCore.invite(ipAddress)
             }catch (e: Exception){
                 e.printStackTrace()
             }
-            logger.info { "place call to $ipAddress" }
+            NuvotonLogger.debugMessage(TAG, "place call to $ipAddress")
             if (mCall == null){
-                logger.info { "could not place call to " + ipAddress }
+                NuvotonLogger.debugMessage(TAG, "could not place call to " + ipAddress)
             }
         }else {
-            logger.info { "isIncomingCall=$isIncomingCall" }
+            NuvotonLogger.debugMessage(TAG, "isIncomingCall=$isIncomingCall")
         }
     }
 
@@ -176,6 +140,10 @@ class LinphoneMiniListener{
 
     fun updateCall(params: LinphoneCallParams){
         mLinphoneCore.updateCall(mCall, params)
+    }
+
+    fun loginServer(username: String, password: String) {
+        mLinphoneCore.defaultProxyConfig
     }
 
     private fun copyAssetsFromPackage(basePath: String) {
@@ -235,5 +203,36 @@ class LinphoneMiniListener{
             videoDeviceId = 1
         }
         mLinphoneCore.videoDevice = videoDeviceId
+    }
+
+    init {
+        LinphoneCoreFactory.instance().setDebugMode(false, "Linphone Mini")
+        try {
+            val basePath = mContext.filesDir.absolutePath
+            copyAssetsFromPackage(basePath)
+            mLinphoneCore = LinphoneCoreFactory.instance().createLinphoneCore(mListener, basePath + "/.linphonerc", basePath + "linphonerc", null, mContext)
+            mLinphoneCore.addListener(mListener)
+            initLinphoneCoreValues(basePath)
+
+            setUserAgent()
+            setFrontCamAsDefault()
+            startIterate()
+            mInstance = this
+            mLinphoneCore.isNetworkReachable = true
+            mLinphoneCore.setSipNetworkReachable(true)
+            mLinphoneCore.enableSpeaker(true)
+            mAudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            mAudioManager.stopBluetoothSco()
+            mAudioManager.isBluetoothScoOn = false
+            NuvotonLogger.debugMessage(TAG, "bluetooth mode: ${mAudioManager.mode}")
+            for (codec in mLinphoneCore.videoCodecs){
+                NuvotonLogger.debugMessage(TAG, "codec: ${codec.toString()}, mime: ${codec.mime}")
+            }
+            mLinphoneCore.enableVideo(true, true)
+        }catch (e: LinphoneCoreException){
+            e.printStackTrace()
+        }catch (e: IOException){
+            e.printStackTrace()
+        }
     }
 }

@@ -4,17 +4,14 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.util.DisplayMetrics
 import android.view.*
-import mu.KotlinLogging
 import org.linphone.core.LinphoneCore
 import org.linphone.mediastream.video.AndroidVideoWindowImpl
-import java.util.logging.Logger
-import kotlin.math.log
 
 /**
  * Created by cchsu20 on 2018/4/11.
  */
-private val logger = KotlinLogging.logger {}
 class VideoCallFragment : Fragment() {
+    private val TAG = "VideoCallFragment"
     private var mVideoView: SurfaceView? = null
     private var mCaptureView: SurfaceView? = null
     private var androidVideoWindowImpl: AndroidVideoWindowImpl? = null
@@ -26,11 +23,10 @@ class VideoCallFragment : Fragment() {
     var mCore: LinphoneCore? = null
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        var view: View
-        if (mCore?.hasCrappyOpenGL() == true){
-            view = inflater!!.inflate(R.layout.video_no_opengl, container, false)
+        val view: View = if (mCore?.hasCrappyOpenGL() == true){
+            inflater!!.inflate(R.layout.video_no_opengl, container, false)
         }else {
-            view = inflater!!.inflate(R.layout.video, container, false)
+            inflater!!.inflate(R.layout.video, container, false)
         }
 
         mVideoView = view.findViewById(R.id.videoSurface)
@@ -41,24 +37,24 @@ class VideoCallFragment : Fragment() {
 
         androidVideoWindowImpl = AndroidVideoWindowImpl(mVideoView, mCaptureView, object : AndroidVideoWindowImpl.VideoWindowListener {
             override fun onVideoRenderingSurfaceReady(p0: AndroidVideoWindowImpl?, p1: SurfaceView?) {
-                logger.info { "video rendering surface ready" }
+                NuvotonLogger.debugMessage(TAG, "video rendering surface ready")
                 mVideoView = p1
                 mCore?.setVideoWindow(p0)
             }
 
             override fun onVideoPreviewSurfaceDestroyed(p0: AndroidVideoWindowImpl?) {
-                logger.info { "video preview surface destroyed" }
+                NuvotonLogger.debugMessage(TAG, "video preview surface destroyed")
             }
 
             override fun onVideoPreviewSurfaceReady(p0: AndroidVideoWindowImpl?, p1: SurfaceView?) {
-                logger.info { "video preview surface ready" }
+                NuvotonLogger.debugMessage(TAG, "video preview surface ready")
                 mCaptureView = p1
                 mCore!!.setPreviewWindow(mCaptureView)
                 resizePreview()
             }
 
             override fun onVideoRenderingSurfaceDestroyed(p0: AndroidVideoWindowImpl?) {
-                logger.info { "video rendering surface destroyed" }
+                NuvotonLogger.debugMessage(TAG, "video rendering surface destroyed")
             }
         })
         return view
@@ -87,14 +83,13 @@ class VideoCallFragment : Fragment() {
             val maxHeight = screenHeight / 4
 
             val videoSize = call.currentParams.sentVideoSize
-            var width = videoSize.width
-            var height = videoSize.height
-
-            logger.info { "Video height is $height, width is $width" }
+            var width = if (videoSize.width == 0) 320 else videoSize.width
+            var height = if (videoSize.height == 0) 240 else videoSize.height
+            NuvotonLogger.debugMessage(TAG, "Video height is $height, width is $width")
             width = width * maxHeight / height
             height = maxHeight
             mCaptureView!!.holder.setFixedSize(width, height)
-            logger.info { "Video preview size is set to $width x $height" }
+            NuvotonLogger.debugMessage(TAG, "Video preview size is set to $width x $height")
         }
     }
 }

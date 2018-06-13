@@ -6,7 +6,7 @@ import android.content.SharedPreferences
 /**
  * Created by cchsu20 on 2018/4/20.
  */
-class SettingManager {
+class SettingManager private constructor(){
     lateinit var pref: SharedPreferences
     var ipAddress: String? = null
     var mContext: Context? = null
@@ -14,8 +14,10 @@ class SettingManager {
         pref = value!!.getSharedPreferences("LinphoneEVA", Context.MODE_PRIVATE)
     }
 
+    private object Holder { val INSTANCE = SettingManager() }
+
     companion object {
-        val shared = SettingManager()
+        val shared: SettingManager by lazy { Holder.INSTANCE }
     }
 
 
@@ -28,9 +30,7 @@ class SettingManager {
 
     fun updateIPAddress(ip: String) : Boolean {
         var result = false
-        if (ipAddress == null){
-            ipAddress = ip
-        }
+        ipAddress = ip
         result = pref.edit().putString("ipaddress", ip).commit()
         return result
     }
