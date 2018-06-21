@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.SurfaceView
 import org.linphone.core.*
 import java.io.IOException;
@@ -12,6 +13,9 @@ import java.util.Timer;
 import org.linphone.core.LinphoneCall.State;
 import org.linphone.mediastream.video.capture.hwconf.AndroidCameraConfiguration;
 import org.linphone.mediastream.video.capture.hwconf.AndroidCameraConfiguration.AndroidCamera;
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
 import kotlin.concurrent.timerTask
 /**
  * Created by cchsu20 on 14/03/2018.
@@ -36,6 +40,7 @@ class LinphoneMiniListener(context: Context) {
     companion object {
         lateinit var mInstance: LinphoneMiniListener
     }
+
     var mInterface: LinphoneMiniListenerInterface? = null
     var isIncomingCall = false
     var isOutgoingCall = false
@@ -48,23 +53,24 @@ class LinphoneMiniListener(context: Context) {
     lateinit var videoCaptureView: SurfaceView
     var ipAddress = "sip:192.168.8."
     var audioOnly = false
+    private var accountCreator: LinphoneAccountCreator? = null
 
     fun destroy() {
         try {
             mTimer.cancel()
             mLinphoneCore.destroy()
-        }catch (e: RuntimeException){
+        } catch (e: RuntimeException) {
 
         }
     }
 
-    fun enableVideo() : Int{
+    fun enableVideo(): Int {
         val param = mLinphoneCore.createCallParams(mCall)
         param.videoEnabled = true
         return mLinphoneCore.updateCall(mCall, param)
     }
 
-    fun acceptEarlyMedia() : Boolean{
+    fun acceptEarlyMedia(): Boolean {
         isIncomingCall = true
 
         mAudioManager.mode = AudioManager.MODE_IN_COMMUNICATION
@@ -77,9 +83,9 @@ class LinphoneMiniListener(context: Context) {
     }
 
     fun accept() {
-        if (isIncomingCall){
+        if (isIncomingCall) {
             val calls = mLinphoneCore.calls
-            for (call in calls){
+            for (call in calls) {
                 if (call.state == State.IncomingReceived || call.state == State.CallIncomingEarlyMedia) {
                     val params: LinphoneCallParams = mLinphoneCore.createCallParams(call)
                     params.enableLowBandwidth(false)
@@ -90,11 +96,11 @@ class LinphoneMiniListener(context: Context) {
                     mAudioManager.mode = AudioManager.MODE_IN_COMMUNICATION
                     mInterface?.callAccepted()
                     NuvotonLogger.debugMessage(TAG, "incoming received, is video enabled: ${call.currentParams.videoEnabled}")
-                }else {
+                } else {
                     mAudioManager.mode = AudioManager.MODE_NORMAL
                 }
             }
-        }else {
+        } else {
             NuvotonLogger.debugMessage(TAG, "There are no incoming calls")
         }
     }
@@ -109,36 +115,37 @@ class LinphoneMiniListener(context: Context) {
         mCall = null
     }
 
-    fun dial(){
+    fun dial() {
         NuvotonLogger.debugMessage(TAG, "isOutgoingCall: $isOutgoingCall")
         isOutgoingCall = true
-        if (!isOutgoingCall && !isIncomingCall){
+        if (!isOutgoingCall && !isIncomingCall) {
             try {
-                mCall = mLinphoneCore.invite(ipAddress)
-            }catch (e: Exception){
+//                mCall = mLinphoneCore.invite(ipAddress)
+                val linphoneAddress = LinphoneAddress()
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
             NuvotonLogger.debugMessage(TAG, "place call to $ipAddress")
-            if (mCall == null){
+            if (mCall == null) {
                 NuvotonLogger.debugMessage(TAG, "could not place call to " + ipAddress)
             }
-        }else {
+        } else {
             NuvotonLogger.debugMessage(TAG, "isIncomingCall=$isIncomingCall")
         }
     }
 
-    fun holdAndResume(isHold: Boolean){
-        if (mCall != null){
+    fun holdAndResume(isHold: Boolean) {
+        if (mCall != null) {
             var call = mCall
-            if (isHold){
+            if (isHold) {
                 mLinphoneCore.resumeCall(call)
-            }else {
+            } else {
                 mLinphoneCore.pauseCall(call)
             }
         }
     }
 
-    fun updateCall(params: LinphoneCallParams){
+    fun updateCall(params: LinphoneCallParams) {
         mLinphoneCore.updateCall(mCall, params)
     }
 
@@ -156,7 +163,9 @@ class LinphoneMiniListener(context: Context) {
         LinphoneMiniUtils.copyIfNotExist(mContext, R.raw.lpconfig, basePath + "/lpconfig.xsd")
         LinphoneMiniUtils.copyIfNotExist(mContext, R.raw.rootca, basePath + "/rootca.pem")
         LinphoneMiniUtils.copyIfNotExist(mContext, R.raw.test, basePath + "/test.mp3")
+        LinphoneMiniUtils.copyIfNotExist(mContext, R.raw.assistant_create, basePath + "/assistant_create.rc")
     }
+
     private fun initLinphoneCoreValues(basePath: String) {
         mLinphoneCore.setContext(mContext)
         mLinphoneCore.setRing(null)
@@ -167,22 +176,22 @@ class LinphoneMiniListener(context: Context) {
         mLinphoneCore.setCpuCount(availableCores)
     }
 
-    private fun setUserAgent(){
+    private fun setUserAgent() {
         try {
             var versionName = mContext.packageManager.getPackageInfo(mContext.packageName, 0).versionName
-            if (versionName == null){
+            if (versionName == null) {
                 versionName = mContext.packageManager.getPackageInfo(mContext.packageName, 0).versionCode.toString()
             }
             mLinphoneCore.setUserAgent("LinphoneMiniAndroid", versionName)
-        }catch (e: PackageManager.NameNotFoundException){
+        } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
         }
     }
 
-    private fun setFrontCamAsDefault(){
+    private fun setFrontCamAsDefault() {
         var camID = 0
         var cams: Array<AndroidCamera> = AndroidCameraConfiguration.retrieveCameras()
-        for (cam in cams){
+        for (cam in cams) {
             if (cam.frontFacing) {
                 camID = cam.id
             }
@@ -190,16 +199,16 @@ class LinphoneMiniListener(context: Context) {
         mLinphoneCore.videoDevice = camID
     }
 
-    private fun startIterate(){
+    private fun startIterate() {
         mTimer = Timer("LinphoneMini scheduler")
         mTimer.schedule(timerTask { mLinphoneCore.iterate() }, 0, 20)
     }
 
     private fun checkCamera() {
         var videoDeviceId = mLinphoneCore.videoDevice
-        if (AndroidCameraConfiguration.retrieveCameras().size == 1){
+        if (AndroidCameraConfiguration.retrieveCameras().size == 1) {
             videoDeviceId = 0
-        }else {
+        } else {
             videoDeviceId = 1
         }
         mLinphoneCore.videoDevice = videoDeviceId
@@ -209,8 +218,10 @@ class LinphoneMiniListener(context: Context) {
         LinphoneCoreFactory.instance().setDebugMode(false, "Linphone Mini")
         try {
             val basePath = mContext.filesDir.absolutePath
+            val linphonercPath = basePath + "/.linphonerc"
+            val linphoneFactoryConfigFile = basePath + "linphonerc"
             copyAssetsFromPackage(basePath)
-            mLinphoneCore = LinphoneCoreFactory.instance().createLinphoneCore(mListener, basePath + "/.linphonerc", basePath + "linphonerc", null, mContext)
+            mLinphoneCore = LinphoneCoreFactory.instance().createLinphoneCore(mListener, linphonercPath, linphoneFactoryConfigFile, null, mContext)
             mLinphoneCore.addListener(mListener)
             initLinphoneCoreValues(basePath)
 
@@ -225,14 +236,94 @@ class LinphoneMiniListener(context: Context) {
             mAudioManager.stopBluetoothSco()
             mAudioManager.isBluetoothScoOn = false
             NuvotonLogger.debugMessage(TAG, "bluetooth mode: ${mAudioManager.mode}")
-            for (codec in mLinphoneCore.videoCodecs){
+            for (codec in mLinphoneCore.videoCodecs) {
                 NuvotonLogger.debugMessage(TAG, "codec: ${codec.toString()}, mime: ${codec.mime}")
             }
             mLinphoneCore.enableVideo(true, true)
-        }catch (e: LinphoneCoreException){
+//            setupAccountCreator(linphonercPath)
+        } catch (e: LinphoneCoreException) {
             e.printStackTrace()
-        }catch (e: IOException){
+        } catch (e: IOException) {
             e.printStackTrace()
+        }
+    }
+
+    @Throws(LinphoneCoreException::class)
+    fun login(username: String, password: String, domain: String) {
+        val identity = "sip:$username@$domain"
+        mLinphoneCore.addAuthInfo(LinphoneCoreFactory.instance().createAuthInfo(username, password, null, domain))
+
+        val proxyConfig = mLinphoneCore.createProxyConfig(identity, domain, null, true)
+        proxyConfig.expires = 2000
+        mLinphoneCore.addProxyConfig(proxyConfig)
+        mLinphoneCore.defaultProxyConfig = proxyConfig
+
+        mLinphoneCore.defaultProxyConfig.edit()
+        mLinphoneCore.defaultProxyConfig.enableRegister(true)
+        mLinphoneCore.defaultProxyConfig.done()
+    }
+
+    private fun setupAccountCreator(linphonercPath: String) {
+        accountCreator = LinphoneCoreFactory.instance().createAccountCreator(mLinphoneCore,
+                getLinphonercUrl(linphonercPath))
+        accountCreator?.setListener(object : LinphoneAccountCreator.LinphoneAccountCreatorListener {
+            override fun onAccountCreatorAccountCreated(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
+
+            }
+
+            override fun onAccountCreatorPhoneAccountRecovered(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onAccountCreatorIsPhoneNumberUsed(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onAccountCreatorIsAccountLinked(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onAccountCreatorPasswordUpdated(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onAccountCreatorIsAccountUsed(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onAccountCreatorPhoneNumberLinkActivated(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onAccountCreatorIsAccountActivated(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onAccountCreatorAccountActivated(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onAccountCreatorAccountLinkedWithPhoneNumber(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+        })
+    }
+
+    private fun getLinphonercUrl(linphonercPath: String): String {
+        return createLpConfig(linphonercPath).getString("assistant", "xmlrpc_url", "not found")
+    }
+
+    @Throws(IOException::class)
+    private fun createLpConfig(linphonercPath: String): LpConfig {
+        val linphonerc = File(linphonercPath)
+        return if (linphonerc.exists()) {
+            LinphoneCoreFactory.instance().createLpConfig(linphonerc.absolutePath)
+        }else {
+            val inputStream = mContext.resources.openRawResource(R.raw.linphonerc_default)
+            val inputReader = InputStreamReader(inputStream)
+            val bufferReader = BufferedReader(inputReader)
+            val text = bufferReader.use(BufferedReader::readText)
+            LinphoneCoreFactory.instance().createLpConfigFromString(text)
         }
     }
 }

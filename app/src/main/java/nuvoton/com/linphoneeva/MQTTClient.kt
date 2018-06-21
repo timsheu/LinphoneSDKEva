@@ -15,10 +15,14 @@ class MQTTClient {
     }
     var client: MqttAndroidClient? = null
     val clientId = "cchsu20MQTT"
-    val port = "19316"
+//MQTT cloud
+//    val port = "19316"
+    val port = "1883"
     val sslPort = "29316"
     val webSocketPort = "39316"
-    val serverUri = "tcp://m13.cloudmqtt.com:$port"
+//MQTT cloud
+//    val serverUri = "tcp://m13.cloudmqtt.com:$port"
+    val serverUri = "tcp://rak.adacomm.io:$port"
     val username = "frrsxmuk"
     val password = "2nU6Nmahng9g"
     val subscriptionTopic = "sensor/+"
@@ -66,8 +70,8 @@ class MQTTClient {
         val options = MqttConnectOptions()
         options.isAutomaticReconnect = true
         options.isCleanSession = false
-        options.userName = username
-        options.password = password.toCharArray()
+//        options.userName = username
+//        options.password = password.toCharArray()
 
         try {
             client?.connect(options, null, object : IMqttActionListener {

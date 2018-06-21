@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="nuvoton.com.linphoneeva">
+    package="nuvoton.com.linphoneeva"
+    android:installLocation="internalOnly">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
@@ -59,13 +60,18 @@
             android:icon="@drawable/ic_launcher_foreground"
             android:label="MQTT TEST"/>
 
-        <!--<receiver android:name=".MQTTBootReceiver"-->
-            <!--android:enabled="true">-->
-            <!--<intent-filter>-->
-                <!--<action-->
-                    <!--android:name="android.intent.action.BOOT_COMPLETED"-->
-                    <!--/>-->
-            <!--</intent-filter>-->
-        <!--</receiver>-->
+        <receiver
+            android:name="nuvoton.com.linphoneeva.MQTTBootReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED"
+            >
+            <intent-filter>
+                <!--<action android:name="android.intent.action.BOOT_COMPLETED" />-->
+                <!--<action android:name="android.intent.action.REBOOT"/>-->
+                <action android:name="android.net.wifi.STATE_CHANGE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

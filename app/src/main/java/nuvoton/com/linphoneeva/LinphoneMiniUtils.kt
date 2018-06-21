@@ -19,7 +19,7 @@ class LinphoneMiniUtils {
         }
 
         @Throws(IOException::class)
-        public fun copyFromPackage(context: Context, resSourceId: Int, target: String) {
+        fun copyFromPackage(context: Context, resSourceId: Int, target: String) {
             val lOutputStream =  FileOutputStream(File(target))
 //            val lOutputStream = context.openFileOutput(target, Context.MODE_PRIVATE)
             val lInputStream = context.resources.openRawResource(resSourceId)

@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() , LinphoneMiniListener.LinphoneMiniList
     var declineButton: Button? = null
     var dialButton: Button? = null
     var holdButton: Button? = null
+    var loginButton: Button? = null
     var ipAddressText: EditText? = null
     var isHold = false
     val noti = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
@@ -49,6 +50,7 @@ class MainActivity : AppCompatActivity() , LinphoneMiniListener.LinphoneMiniList
         declineButton = findViewById(R.id.decline)
         dialButton = findViewById(R.id.dial)
         holdButton = findViewById(R.id.hold)
+        loginButton = findViewById(R.id.login)
         ipAddressText = findViewById(R.id.ip_address)
         SettingManager.shared.mContext = this
 
@@ -239,6 +241,10 @@ class MainActivity : AppCompatActivity() , LinphoneMiniListener.LinphoneMiniList
             } else {
                 holdButton?.text = "Hold"
             }
+        }
+
+        loginButton?.setOnClickListener {
+            linphoneMiniListener.login("timsheu", "48694062", "sip.linphone.org")
         }
     }
 

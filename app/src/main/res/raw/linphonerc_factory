@@ -28,3 +28,13 @@ dtmf_player_amp=0.1
 
 [misc]
 max_calls=10
+
+[assistant]
+domain=sip.linphone.org
+password_max_length=-1
+password_min_length=1
+username_length=-1
+username_max_length=64
+username_min_length=1
+username_regex=^[a-z0-9_.\-]*$
+xmlrpc_url=https://subscribe.linphone.org:444/wizard.php

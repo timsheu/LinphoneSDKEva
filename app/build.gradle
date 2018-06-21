@@ -33,6 +33,7 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-android', version: '1.7.7'
     implementation project(':liblinphoneSDK')
     implementation 'com.karumi:dexter:4.2.0'
+
     implementation 'com.google.dagger:dagger:2.11'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.11'
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
