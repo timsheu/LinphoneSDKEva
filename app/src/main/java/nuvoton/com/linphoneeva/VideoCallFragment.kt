@@ -21,12 +21,11 @@ class VideoCallFragment : Fragment() {
     private var previewX = 0
     private var previewY = 0
     var mCore: LinphoneCore? = null
-
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view: View = if (mCore?.hasCrappyOpenGL() == true){
-            inflater!!.inflate(R.layout.video_no_opengl, container, false)
+            inflater.inflate(R.layout.video_no_opengl, container, false)
         }else {
-            inflater!!.inflate(R.layout.video, container, false)
+            inflater.inflate(R.layout.video, container, false)
         }
 
         mVideoView = view.findViewById(R.id.videoSurface)
@@ -60,6 +59,7 @@ class VideoCallFragment : Fragment() {
         return view
     }
 
+
     private fun fixZOrder(video : SurfaceView, preview: SurfaceView){
         video.setZOrderOnTop(false)
         preview.setZOrderOnTop(true)
@@ -78,7 +78,7 @@ class VideoCallFragment : Fragment() {
             }
 
             val metrics = DisplayMetrics()
-            this.activity.windowManager.defaultDisplay.getMetrics(metrics)
+            this.activity?.windowManager?.defaultDisplay?.getMetrics(metrics)
             val screenHeight = metrics.heightPixels
             val maxHeight = screenHeight / 4
 

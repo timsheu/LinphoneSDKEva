@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">linphoneEVA</string>
+    <string name="title_setting">Setting</string>
+    <string name="title_linphone">Linphone</string>
+    <string name="item_enable_earlymedia">Early Media</string>
+    <string name="item_enable_video">Video</string>
+    <string name="item_enable_audio">Audio</string>
+    <string name="item_enable_speaker">Speaker</string>
+    <string name="item_login_username">Username</string>
+    <string name="item_login_password">Password</string>
+    <string name="item_login_domain">Domain</string>
+    <string name="title_mqtt">MQTT</string>
+    <string name="item_server">Server</string>
+    <string name="item_port">Port</string>
+    <string name="item_product_id">Product ID</string>
+    <string name="item_client_id">Client ID</string>
+    <string name="item_topic_control">Control Topic</string>
+    <string name="item_topic_status">Status Topic</string>
+    <string name="hint">Click to edit</string>
+    <string name="toast_crash_report">Crash report sent</string>
 </resources>

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:text="@string/title_linphone"
+        android:textSize="30sp"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_enable_earlymedia"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <ToggleButton
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/toggle_earlymedia"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_enable_video"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <ToggleButton
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/toggle_video"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_enable_audio"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <ToggleButton
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/toggle_audio"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_enable_speaker"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <ToggleButton
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/toggle_speaker"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_login_username"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/text_username"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_login_password"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/text_password"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_login_domain"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/text_domain"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <TextView
+        android:text="@string/title_mqtt"
+        android:textSize="30sp"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_server"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/text_mqtt_server"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_port"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/text_mqtt_port"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_product_id"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/text_mqtt_product_id"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_client_id"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:inputType="none"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/text_mqtt_client_id"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAlignment="center"
+            android:layout_weight="3"
+            android:text="@string/item_topic_control"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="2"
+            android:id="@+id/text_mqtt_topic_control"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:textAlignment="center"
+                android:layout_weight="3"
+                android:text="@string/item_topic_status"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+            <EditText
+                android:layout_marginStart="0dp"
+                android:layout_marginEnd="20dp"
+                android:layout_weight="2"
+                android:id="@+id/text_mqtt_topic_status"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

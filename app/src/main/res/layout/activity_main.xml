@@ -7,7 +7,6 @@
     android:keepScreenOn="true"
     tools:context="nuvoton.com.linphoneeva.MainActivity">
 
-
     <Button
         android:id="@+id/accept"
         android:layout_width="wrap_content"
@@ -15,7 +14,7 @@
         android:layout_marginBottom="30dp"
         android:layout_marginStart="48dp"
         android:text="accept"
-        app:layout_constraintBottom_toTopOf="@id/dial"
+        app:layout_constraintTop_toTopOf="@id/hold"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
@@ -25,7 +24,7 @@
         android:layout_marginBottom="50dp"
         android:layout_marginStart="48dp"
         android:text="Dial"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="@id/login"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
@@ -39,14 +38,25 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
+        android:id="@+id/setting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Setting"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/hold"
+        />
+
+    <Button
         android:id="@+id/decline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="48dp"
-        android:layout_marginEnd="148dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
         android:text="decline"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        />
 
     <Button
         android:id="@+id/login"

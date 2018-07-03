@@ -1,8 +1,15 @@
 package nuvoton.com.linphoneeva
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import org.eclipse.paho.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.*
+import android.hardware.usb.UsbDevice.getDeviceId
+import android.os.Build
+import android.support.v4.app.ActivityCompat
+import android.telephony.TelephonyManager
+
 
 /**
  * Created by cchsu20 on 2018/6/6.
@@ -14,35 +21,31 @@ class MQTTClient {
         val shared: MQTTClient by lazy { Holder.INSTANCE }
     }
     var client: MqttAndroidClient? = null
-    val clientId = "cchsu20MQTT"
-//MQTT cloud
-//    val port = "19316"
     val port = "1883"
-    val sslPort = "29316"
-    val webSocketPort = "39316"
-//MQTT cloud
-//    val serverUri = "tcp://m13.cloudmqtt.com:$port"
     val serverUri = "tcp://rak.adacomm.io:$port"
-    val username = "frrsxmuk"
-    val password = "2nU6Nmahng9g"
-    val subscriptionTopic = "sensor/+"
+    var topicControl = ""
+    var topicStatus = ""
+    var productId = "36AM17"
+    var deviceId = ""
+    set(value) {
+        topicControl = "$productId/$value/control"
+        topicStatus = "$productId/$value/status"
+    }
+
+    val content = "LIVEVIEW"
 
     fun initClient(context: Context) {
-        client = MqttAndroidClient(context, serverUri, clientId)
-        val callback = client?.setCallback(object : MqttCallback {
-            override fun messageArrived(topic: String?, message: MqttMessage?) {
-                NuvotonLogger.debugMessage(TAG, "messageArrived=${message.toString()}")
+        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        val isPermitted = ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
+        if (isPermitted == PackageManager.PERMISSION_GRANTED) {
+            deviceId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                telephonyManager.imei
+            } else {
+                telephonyManager.deviceId
             }
-
-            override fun connectionLost(cause: Throwable?) {
-                NuvotonLogger.debugMessage(TAG, "connectionLost=${cause.toString()}")
-            }
-
-            override fun deliveryComplete(token: IMqttDeliveryToken?) {
-                NuvotonLogger.debugMessage(TAG, "deliveryComplete=${token.toString()}")
-            }
-        })
-
+        }
+        NuvotonLogger.debugMessage(TAG, "imei=$deviceId")
+        client = MqttAndroidClient(context, serverUri, deviceId)
         connect()
     }
 
@@ -52,13 +55,24 @@ class MQTTClient {
 
     private fun subscribeToTopic() {
         try {
-            client?.subscribe(subscriptionTopic, 0, null, object : IMqttActionListener {
+            client?.subscribe(topicStatus, 0, null, object : IMqttActionListener {
                 override fun onSuccess(asyncActionToken: IMqttToken?) {
-                    NuvotonLogger.debugMessage(TAG, "subscribe onSuccess=${asyncActionToken.toString()}")
+                    NuvotonLogger.debugMessage(TAG, "$topicStatus subscribe onSuccess=${asyncActionToken.toString()}")
+                    publish(MQTTClient.shared.topicStatus)
                 }
 
                 override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
-                    NuvotonLogger.debugMessage(TAG, "subscribe onFailure=${asyncActionToken.toString()}")
+                    NuvotonLogger.debugMessage(TAG, "$topicStatus subscribe onFailure=${asyncActionToken.toString()}")
+                }
+            })
+
+            client?.subscribe(topicControl, 0, null, object : IMqttActionListener {
+                override fun onSuccess(asyncActionToken: IMqttToken?) {
+                    NuvotonLogger.debugMessage(TAG, "$topicControl subscribe onSuccess=${asyncActionToken.toString()}")
+                }
+
+                override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
+                    NuvotonLogger.debugMessage(TAG, "$topicControl subscribe onFailure=${asyncActionToken.toString()}")
                 }
             })
         }catch (e: Exception) {
@@ -69,7 +83,8 @@ class MQTTClient {
     private fun connect() {
         val options = MqttConnectOptions()
         options.isAutomaticReconnect = true
-        options.isCleanSession = false
+        // If isCleanSession is set to false, the connecting process to RAK server will fail
+//        options.isCleanSession = false
 //        options.userName = username
 //        options.password = password.toCharArray()
 
@@ -93,5 +108,10 @@ class MQTTClient {
         }catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun publish(message: String) {
+        NuvotonLogger.debugMessage(TAG, message)
+        client?.publish(message, MqttMessage("test".toByteArray()))
     }
 }

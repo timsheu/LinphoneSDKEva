@@ -117,11 +117,11 @@ class LinphoneMiniListener(context: Context) {
 
     fun dial() {
         NuvotonLogger.debugMessage(TAG, "isOutgoingCall: $isOutgoingCall")
-        isOutgoingCall = true
         if (!isOutgoingCall && !isIncomingCall) {
             try {
-//                mCall = mLinphoneCore.invite(ipAddress)
-                val linphoneAddress = LinphoneAddress()
+                mCall = mLinphoneCore.invite(ipAddress)
+//                val linphoneAddress = LinphoneCoreFactory.instance().createLinphoneAddress("cchsu20", "sip.linphhone.org", "cchsu20")
+//                mCall = mLinphoneCore.invite(linphoneAddress)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -132,6 +132,7 @@ class LinphoneMiniListener(context: Context) {
         } else {
             NuvotonLogger.debugMessage(TAG, "isIncomingCall=$isIncomingCall")
         }
+        isOutgoingCall = true
     }
 
     fun holdAndResume(isHold: Boolean) {
@@ -155,8 +156,8 @@ class LinphoneMiniListener(context: Context) {
 
     private fun copyAssetsFromPackage(basePath: String) {
         LinphoneMiniUtils.copyIfNotExist(mContext, R.raw.oldphone_mono, basePath + "/oldphone_mono.wav")
-        LinphoneMiniUtils.copyIfNotExist(mContext, R.raw.ringback, basePath + "ringback.wav")
-        LinphoneMiniUtils.copyIfNotExist(mContext, R.raw.toy_mono, basePath + "toy_mono.wav")
+        LinphoneMiniUtils.copyIfNotExist(mContext, R.raw.ringback, basePath + "/ringback.wav")
+        LinphoneMiniUtils.copyIfNotExist(mContext, R.raw.toy_mono, basePath + "/toy_mono.wav")
         LinphoneMiniUtils.copyIfNotExist(mContext, R.raw.linphonerc_default, basePath + "/.linphonerc")
 //        val factoryFile = File(basePath + "/linphonerc")
         LinphoneMiniUtils.copyFromPackage(mContext, R.raw.linphonerc_factory, basePath + "/linphonerc")
@@ -170,8 +171,8 @@ class LinphoneMiniListener(context: Context) {
         mLinphoneCore.setContext(mContext)
         mLinphoneCore.setRing(null)
         mLinphoneCore.setRootCA(basePath + "/rootca.pem")
-        mLinphoneCore.setPlayFile(basePath + "toy_mono.wav")
-        mLinphoneCore.setChatDatabasePath(basePath + "linphone-history.db")
+        mLinphoneCore.setPlayFile(basePath + "/toy_mono.wav")
+        mLinphoneCore.setChatDatabasePath(basePath + "/linphone-history.db")
         val availableCores = Runtime.getRuntime().availableProcessors()
         mLinphoneCore.setCpuCount(availableCores)
     }
@@ -191,11 +192,7 @@ class LinphoneMiniListener(context: Context) {
     private fun setFrontCamAsDefault() {
         var camID = 0
         var cams: Array<AndroidCamera> = AndroidCameraConfiguration.retrieveCameras()
-        for (cam in cams) {
-            if (cam.frontFacing) {
-                camID = cam.id
-            }
-        }
+        cams.filter { it.frontFacing }.forEach { camID = it.id }
         mLinphoneCore.videoDevice = camID
     }
 
@@ -206,11 +203,7 @@ class LinphoneMiniListener(context: Context) {
 
     private fun checkCamera() {
         var videoDeviceId = mLinphoneCore.videoDevice
-        if (AndroidCameraConfiguration.retrieveCameras().size == 1) {
-            videoDeviceId = 0
-        } else {
-            videoDeviceId = 1
-        }
+        videoDeviceId = if (AndroidCameraConfiguration.retrieveCameras().size == 1) { 0 } else { 1 }
         mLinphoneCore.videoDevice = videoDeviceId
     }
 
@@ -219,7 +212,7 @@ class LinphoneMiniListener(context: Context) {
         try {
             val basePath = mContext.filesDir.absolutePath
             val linphonercPath = basePath + "/.linphonerc"
-            val linphoneFactoryConfigFile = basePath + "linphonerc"
+            val linphoneFactoryConfigFile = basePath + "/linphonerc"
             copyAssetsFromPackage(basePath)
             mLinphoneCore = LinphoneCoreFactory.instance().createLinphoneCore(mListener, linphonercPath, linphoneFactoryConfigFile, null, mContext)
             mLinphoneCore.addListener(mListener)
@@ -263,67 +256,4 @@ class LinphoneMiniListener(context: Context) {
         mLinphoneCore.defaultProxyConfig.done()
     }
 
-    private fun setupAccountCreator(linphonercPath: String) {
-        accountCreator = LinphoneCoreFactory.instance().createAccountCreator(mLinphoneCore,
-                getLinphonercUrl(linphonercPath))
-        accountCreator?.setListener(object : LinphoneAccountCreator.LinphoneAccountCreatorListener {
-            override fun onAccountCreatorAccountCreated(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
-
-            }
-
-            override fun onAccountCreatorPhoneAccountRecovered(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onAccountCreatorIsPhoneNumberUsed(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onAccountCreatorIsAccountLinked(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onAccountCreatorPasswordUpdated(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onAccountCreatorIsAccountUsed(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onAccountCreatorPhoneNumberLinkActivated(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onAccountCreatorIsAccountActivated(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onAccountCreatorAccountActivated(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onAccountCreatorAccountLinkedWithPhoneNumber(accountCreator: LinphoneAccountCreator?, status: LinphoneAccountCreator.RequestStatus?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-        })
-    }
-
-    private fun getLinphonercUrl(linphonercPath: String): String {
-        return createLpConfig(linphonercPath).getString("assistant", "xmlrpc_url", "not found")
-    }
-
-    @Throws(IOException::class)
-    private fun createLpConfig(linphonercPath: String): LpConfig {
-        val linphonerc = File(linphonercPath)
-        return if (linphonerc.exists()) {
-            LinphoneCoreFactory.instance().createLpConfig(linphonerc.absolutePath)
-        }else {
-            val inputStream = mContext.resources.openRawResource(R.raw.linphonerc_default)
-            val inputReader = InputStreamReader(inputStream)
-            val bufferReader = BufferedReader(inputReader)
-            val text = bufferReader.use(BufferedReader::readText)
-            LinphoneCoreFactory.instance().createLpConfigFromString(text)
-        }
-    }
 }
