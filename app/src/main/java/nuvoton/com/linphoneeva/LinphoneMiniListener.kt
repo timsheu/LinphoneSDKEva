@@ -92,7 +92,9 @@ class LinphoneMiniListener(context: Context) {
                     params.videoEnabled = true
                     checkCamera()
                     mLinphoneCore.acceptCallWithParams(call, params)
-                    mLinphoneCore.enableSpeaker(true)
+                    val isSpeaker = SettingManager.shared.settingMap[Category.EnableSpeaker.name]
+                    val enableSpeaker = isSpeaker == "true"
+                    mLinphoneCore.enableSpeaker(enableSpeaker)
                     mAudioManager.mode = AudioManager.MODE_IN_COMMUNICATION
                     mInterface?.callAccepted()
                     NuvotonLogger.debugMessage(TAG, "incoming received, is video enabled: ${call.currentParams.videoEnabled}")
@@ -224,7 +226,9 @@ class LinphoneMiniListener(context: Context) {
             mInstance = this
             mLinphoneCore.isNetworkReachable = true
             mLinphoneCore.setSipNetworkReachable(true)
-            mLinphoneCore.enableSpeaker(true)
+            val isSpeaker = SettingManager.shared.settingMap[Category.EnableSpeaker.name]
+            val enableSpeaker = isSpeaker == "true"
+            mLinphoneCore.enableSpeaker(enableSpeaker)
             mAudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             mAudioManager.stopBluetoothSco()
             mAudioManager.isBluetoothScoOn = false

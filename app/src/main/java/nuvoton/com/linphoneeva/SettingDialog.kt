@@ -22,17 +22,12 @@ class SettingDialog {
 
             map.entries.withIndex().forEach { (index, entry) ->
                 var type = SettingType.Button
-                if (index > 4) type = SettingType.EditText
+                if (index > 0) type = SettingType.EditText
                 dataset.add(SettingListItem(entry.key, entry .value, type))
             }
 
             val dialog = MaterialDialog.Builder(context).title(R.string.title_setting)
-                    .positiveText("Save")
                     .adapter(SettingAdapter(dataset), null)
-                    .onPositive { dialog, action ->
-                        SettingManager.shared.updateSettingsToPref()
-                    }
-                    .neutralText("Cancel")
                     .build()
 
 //            val listView = dialog.customView?.findViewById<RecyclerView>(R.id.recycle_setting_view)

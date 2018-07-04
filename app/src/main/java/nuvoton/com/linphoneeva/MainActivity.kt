@@ -7,6 +7,7 @@ import com.karumi.dexter.Dexter
 import android.Manifest.permission;
 import android.app.Notification
 import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.media.MediaPlayer
@@ -66,7 +67,8 @@ class MainActivity : AppCompatActivity() , LinphoneMiniListener.LinphoneMiniList
         linphoneMiniListener.mInterface = this
 
         initButtons()
-
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancelAll()
         val intent = Intent(this, MQTTService::class.java)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             startForegroundService(intent)
@@ -215,7 +217,10 @@ class MainActivity : AppCompatActivity() , LinphoneMiniListener.LinphoneMiniList
             override fun afterTextChanged(editable: Editable?) {
                 NuvotonLogger.debugMessage(TAG, "ipaddress: ${editable.toString()}")
                 linphoneMiniListener.ipAddress = editable.toString()
-                SettingManager.shared.settingMap[Category.DeviceIpAddress.name] = editable.toString()
+                val key = Category.DeviceIpAddress.name
+                val value = editable.toString()
+                SettingManager.shared.settingMap[key] = value
+                SettingManager.shared.updateSettingToPref(key, value)
             }
 
             override fun beforeTextChanged(charSequence: CharSequence?, p1: Int, p2: Int, p3: Int) {

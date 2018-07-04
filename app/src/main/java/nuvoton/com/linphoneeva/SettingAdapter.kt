@@ -6,6 +6,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.ToggleButton
@@ -65,6 +66,7 @@ RecyclerView.Adapter<RecyclerView.ViewHolder>(){
             else -> {
                 (holder as EditTextHolder).category.text = item.category
                 holder.edittext.setText(item.value)
+                holder.edittext.imeOptions = EditorInfo.IME_ACTION_DONE
                 holder.edittext.addTextChangedListener(object : TextWatcher {
                     override fun afterTextChanged(s: Editable?) {
                         SettingManager.shared.settingMap[item.category] = s?.toString() ?: "null"

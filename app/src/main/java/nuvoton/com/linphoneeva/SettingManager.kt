@@ -8,11 +8,11 @@ import android.content.SharedPreferences
  */
 
 enum class Category(val value: String) {
-    DeviceIpAddress("sip:192.168.8.8"),
-    EnableEarlyMedia("false"),
-    EnableVideo("true"),
-    EnableAudio("true"),
+//    EnableEarlyMedia("false"),
+//    EnableVideo("true"),
+//    EnableAudio("true"),
     EnableSpeaker("true"),
+    DeviceIpAddress("sip:192.168.8.8"),
     LoginUsername("cchsu20"),
     LoginPassword("48694062"),
     LoginDomain("sip.linphone.org")
@@ -51,5 +51,9 @@ class SettingManager private constructor(){
         settingMap.forEach { setting ->
             pref?.edit()?.putString(setting.key, setting.value)?.apply()
         }
+    }
+
+    fun updateSettingToPref(key: String, value: String) {
+        pref?.edit()?.putString(key, value)?.apply()
     }
 }

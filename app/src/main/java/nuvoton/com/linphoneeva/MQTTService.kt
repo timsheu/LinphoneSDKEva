@@ -3,6 +3,7 @@ package nuvoton.com.linphoneeva
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.os.Binder
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
@@ -16,6 +17,13 @@ class MQTTService : Service() {
     private val TAG = "MQTTService"
     private var count = 0
     private var isStarted = false
+
+    inner class MQTTServiceBinder: Binder() {
+        fun getService(): MQTTService? {
+            return this@MQTTService
+        }
+    }
+
     override fun onCreate() {
         NuvotonLogger.context = this
         NuvotonLogger.debugMessage(TAG, "onCreate")
@@ -30,11 +38,11 @@ class MQTTService : Service() {
         NuvotonLogger.debugMessage(TAG, message)
         NuvotonLogger.context = this
         NuvotonLogger.debugMessageInPref("$TAG, from", message)
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     override fun onBind(p0: Intent?): IBinder {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return MQTTServiceBinder()
     }
 
     private fun showNotification(message: String) {
@@ -72,18 +80,18 @@ class MQTTService : Service() {
                 .setContentTitle("MQTT Message")
                 .setContentText(message)
                 .setTicker(message)
-                .setPriority(Notification.PRIORITY_MAX)
+                .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             notificationBuilder.setVisibility(Notification.VISIBILITY_PUBLIC)
         }
+
         if (isStarted) {
-            notificationManager.notify(MQTTConstants.START_SERVICE.value, notificationBuilder.build())
-        }
-        else{
+            notificationManager.notify(count++, notificationBuilder.build())
+        }else{
             isStarted = true
-            startForeground(MQTTConstants.START_SERVICE.value, notificationBuilder.build())
+            startForeground(count++, notificationBuilder.build())
         }
 
     }

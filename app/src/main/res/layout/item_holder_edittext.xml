@@ -30,11 +30,13 @@
         />
 
     <EditText
+        android:ems="10"
         android:textSize="13sp"
         android:hint="@+string/hint"
         android:id="@+id/edittext_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:inputType="text"
         app:layout_constraintStart_toStartOf="@id/edittext_align"
         app:layout_constraintEnd_toEndOf="@id/edittext_align"
         app:layout_constraintTop_toTopOf="parent"
